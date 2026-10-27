@@ -1,9 +1,28 @@
 import Foundation
 
-public actor GitClient {
+public actor GitClient: RemoteRepository {
     public init() {}
 
     public func tags(at location: String) async throws -> [String] {
+        let output = try await query(location: location, arguments: ["--tags", "--refs"])
+        return output.split(separator: "\n").compactMap {
+            let fields = $0.split(separator: "\t", maxSplits: 1)
+            guard fields.count == 2, fields[1].hasPrefix("refs/tags/") else { return nil }
+            return String(fields[1].dropFirst("refs/tags/".count))
+        }
+    }
+
+    public func revision(at location: String, branch: String) async throws -> String {
+        let reference = "refs/heads/\(branch)"
+        let output = try await query(location: location, arguments: ["--exit-code", "--heads"], references: [reference])
+        for line in output.split(separator: "\n") {
+            let fields = line.split(separator: "\t", maxSplits: 1)
+            if fields.count == 2, fields[1] == reference { return String(fields[0]) }
+        }
+        throw UpdateError.message("Remote branch was not found")
+    }
+
+    private func query(location: String, arguments: [String], references: [String] = []) async throws -> String {
         // Restrict transports so lockfiles cannot invoke Git remote helpers or local commands
         guard let url = URL(string: location),
               let scheme = url.scheme, ["https", "http", "ssh"].contains(scheme),
@@ -22,7 +41,7 @@ public actor GitClient {
         defer { try? output.close(); try? errors.close() }
         let process = Process()
         process.executableURL = URL(filePath: "/usr/bin/git")
-        process.arguments = ["-c", "credential.interactive=false", "ls-remote", "--tags", "--refs", "--", location]
+        process.arguments = ["-c", "credential.interactive=false", "ls-remote"] + arguments + ["--", location] + references
         var environment = ProcessInfo.processInfo.environment
         environment["GIT_TERMINAL_PROMPT"] = "0"
         environment["GIT_SSH_COMMAND"] = "ssh -oBatchMode=yes -oConnectTimeout=15 -oStrictHostKeyChecking=yes"
@@ -41,16 +60,14 @@ public actor GitClient {
             }
         } catch {
             if process.isRunning { process.terminate() }
+            // Keep temporary files open until Git has stopped writing
+            while process.isRunning { try? await Task.sleep(for: .milliseconds(50)) }
             throw error
         }
         guard process.terminationStatus == 0 else {
             // Git output can include credentials embedded in repository URLs
-            throw UpdateError.message("Git could not read remote tags (exit \(process.terminationStatus)) — check repository access")
+            throw UpdateError.message("Git could not read remote refs (exit \(process.terminationStatus)) — check repository access")
         }
-        return try String(contentsOf: outputURL, encoding: .utf8).split(separator: "\n").compactMap {
-            let fields = $0.split(separator: "\t", maxSplits: 1)
-            guard fields.count == 2, fields[1].hasPrefix("refs/tags/") else { return nil }
-            return String(fields[1].dropFirst("refs/tags/".count))
-        }
+        return try String(contentsOf: outputURL, encoding: .utf8)
     }
 }

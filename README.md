@@ -9,14 +9,14 @@ Requires Swift 6.4 / Xcode 27 or later, macOS 13 or later, and Git provided by X
 
 The package exports `SwiftUpdatePlugin`, the `swift-update` executable, and the `UpdateCore` library
 
-Add `https://github.com/TopScrech/swift-update` using Xcode → File → Add Package Dependencies, with a minimum version of `0.1.0`
+Add `https://github.com/TopScrech/swift-update` using Xcode → File → Add Package Dependencies, with a minimum version of `1.0.0`
 Do not link the executable or library into your app target just to use the plugin
 Invoke `SwiftUpdatePlugin` from the project's package command menu and allow its requested network access
 
 For a Swift package, add the repository to `dependencies` in `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/TopScrech/swift-update.git", from: "0.1.0")
+.package(url: "https://github.com/TopScrech/swift-update.git", from: "1.0.0")
 ```
 Command plugins do not need an entry in a target's build-tool `plugins` list
 Run from the consuming package directory:

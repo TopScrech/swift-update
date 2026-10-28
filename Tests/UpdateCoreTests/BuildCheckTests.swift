@@ -22,7 +22,7 @@ struct BuildCheckTests {
         #expect(!first.cached)
         #expect(second.cached)
         #expect(second.report.messages == first.report.messages)
-        #expect(second.report.messages.first?.contains("1.0.0 -> 2.0.0") == true)
+        #expect(second.report.messages.first == "Update package dependency: example 1.0.0 -> 2.0.0")
         #expect(await remote.requests == 1)
         try lockfile(version: "2.0.0").write(to: file)
         let changed = try await runner.run(path: file)
@@ -70,7 +70,7 @@ struct BuildCheckTests {
         let results = await DependencyChecker(remote: remote).check(pins: resolved.pins)
         let report = BuildCheckReport(results: results)
         #expect(report.success)
-        #expect(report.messages.first?.contains("branch main has a different remote HEAD (aaaaaaaaaaaa -> bbbbbbbbbbbb)") == true)
+        #expect(report.messages.first == "Update package dependency: example branch main aaaaaaaaaaaa -> bbbbbbbbbbbb")
         #expect(await remote.requests == 1)
     }
 
@@ -108,7 +108,7 @@ struct BuildCheckTests {
     }
 
     @Test func warningCannotInjectExtraDiagnostics() {
-        #expect(BuildCheckReport.warning("example\nerror: fake") == "warning: Package updates: example error: fake")
+        #expect(BuildCheckReport.warning("example\nerror: fake") == "warning: example error: fake")
     }
 
     @Test func cacheExpirationAndClockRollback() {

@@ -45,7 +45,7 @@ The phase needs network access, so use `ENABLE_USER_SCRIPT_SANDBOXING = NO` on t
 
 Xcode mode:
 
-- Emits updates and lookup failures as `warning: Package updates: …`
+- Emits updates as `warning: Update package dependency: some-package 1.1.0 -> 1.1.1` and lookup failures as `warning: …`
 - Checks both version pins and branch pins, skipping fixed revisions
 - Keeps successful results, including update warnings, for 15 minutes
 - Stores its cache under the user's caches directory, outside the project

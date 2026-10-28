@@ -9,9 +9,9 @@ public struct BuildCheckReport: Codable, Sendable {
             switch result.status {
             case "outdated":
                 if let branch = result.branch {
-                    messages.append("\(result.package) branch \(branch) has a different remote HEAD (\(result.current.prefix(12)) -> \(result.latest?.prefix(12) ?? "unknown")); update package dependencies")
+                    messages.append("Update package dependency: \(result.package) branch \(branch) \(result.current.prefix(12)) -> \(result.latest?.prefix(12) ?? "unknown")")
                 } else {
-                    messages.append("\(result.package) has an update (\(result.current) -> \(result.latest ?? "unknown")); update package dependencies")
+                    messages.append("Update package dependency: \(result.package) \(result.current) -> \(result.latest ?? "unknown")")
                 }
             case "up-to-date": break
             default:
@@ -28,6 +28,6 @@ public struct BuildCheckReport: Codable, Sendable {
     }
 
     public static func warning(_ message: String) -> String {
-        "warning: Package updates: " + message.split(whereSeparator: { $0.isNewline }).joined(separator: " ")
+        "warning: " + message.split(whereSeparator: { $0.isNewline }).joined(separator: " ")
     }
 }

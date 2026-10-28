@@ -10,7 +10,7 @@ public struct BuildCheckRunner: Sendable {
     public init(
         cacheDirectory: URL = URL.cachesDirectory.appending(path: "SwiftUpdate/BuildChecks"),
         remote: any RemoteRepository = GitClient(),
-        toolVersion: String = "1.1.0"
+        toolVersion: String = "1.1.1"
     ) {
         self.cacheDirectory = cacheDirectory
         checker = DependencyChecker(remote: remote)

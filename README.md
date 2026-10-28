@@ -99,7 +99,7 @@ Xcode mode always exits 0, including on malformed input or lookup failures
 - Requests an explicit path if multiple Xcode lockfiles are found
 - Uses `git ls-remote` without cloning repositories
 - Compares semantic versions numerically, including prerelease ordering
-- Accepts standard version tags such as `1.2.3` and `v1.2.3`
+- Accepts version tags such as `1.2.3` and `v1.2.3`, treating omitted patch components in `1.2` and `v1.2` as zero
 - Excludes prerelease tags unless `--prereleases` is passed
 - Checks branch pins against their remote HEADs
 - Reports fixed revisions and repositories without usable version tags as `unknown` in normal CLI mode

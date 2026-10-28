@@ -9,10 +9,11 @@ public struct SemanticVersion: Comparable, Sendable {
         let metadata = value.split(separator: "+", maxSplits: 1, omittingEmptySubsequences: false)
         let parts = metadata[0].split(separator: "-", maxSplits: 1, omittingEmptySubsequences: false)
         let numbers = parts[0].split(separator: ".", omittingEmptySubsequences: false)
-        guard numbers.count == 3,
+        guard (2...3).contains(numbers.count),
               numbers.allSatisfy({ Self.isNumber(String($0)) && ($0.count == 1 || !$0.hasPrefix("0")) }) else { return nil }
-        let parsed = numbers.compactMap { Int($0) }
-        guard parsed.count == 3 else { return nil }
+        var parsed = numbers.compactMap { Int($0) }
+        guard parsed.count == numbers.count else { return nil }
+        if parsed.count == 2 { parsed.append(0) }
         let identifiers = parts.count == 2 ? parts[1].split(separator: ".", omittingEmptySubsequences: false).map(String.init) : []
         guard identifiers.allSatisfy({ Self.isIdentifier($0) && (!Self.isNumber($0) || $0.count == 1 || !$0.hasPrefix("0")) }) else { return nil }
         if metadata.count == 2 {

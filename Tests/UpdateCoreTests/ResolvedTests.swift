@@ -17,6 +17,27 @@ struct ResolvedTests {
         #expect(prerelease.latest == "2.0.0-beta.1")
     }
 
+    @Test func twoComponentTagsProduceSuccessfulReport() throws {
+        let json = """
+        {"version":3,"pins":[{"identity":"asc","location":"https://github.com/TopScrech/ASC","state":{"version":"1.0.0"}}]}
+        """
+        let file = try JSONDecoder().decode(ResolvedFile.self, from: Data(json.utf8))
+        let pin = try #require(file.pins.first)
+        let current = UpdateResult(pin: pin, tags: ["v1.0"], includePrereleases: false)
+        #expect(current.latest == "v1.0")
+        #expect(current.status == "up-to-date")
+        let report = BuildCheckReport(results: [current])
+        #expect(report.success)
+        #expect(report.messages.isEmpty)
+
+        let newer = UpdateResult(pin: pin, tags: ["v1.0", "v1.1", "v2.0-beta.1"], includePrereleases: false)
+        #expect(newer.latest == "v1.1")
+        #expect(newer.status == "outdated")
+        let prerelease = UpdateResult(pin: pin, tags: ["v1.1", "v2.0-beta.1"], includePrereleases: true)
+        #expect(prerelease.latest == "v2.0-beta.1")
+        #expect(prerelease.status == "outdated")
+    }
+
     @Test func legacyBranchPin() throws {
         let json = """
         {"version":1,"object":{"pins":[{"package":"Example","repositoryURL":"https://example.com/repo.git","state":{"branch":"main","revision":"abc"}}]}}
